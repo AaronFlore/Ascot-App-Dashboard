@@ -17,23 +17,14 @@ const LoginPortal = ({ user, setUser }) => {
   const handleSignUp = () => {
     try {
       if (!isValidPassword(password)) {
-        setErrorMsg("Password must be 8-12 characters with a number");
-        setTimeout(() => {
-          setErrorMsg("");
-        }, 1000);
-        return;
+        throw Error("Password must be valid (8-12 char. with 1 number)");
       } else if (!isValidEmail(email)) {
-        setErrorMsg("Email must be a valid email address");
-        setTimeout(() => {
-          setErrorMsg("");
-        }, 1000);
-        return;
+        throw Error("Email must be a valid email address");
       }
       createUserWithEmailAndPassword(auth, email, password).then(
         (userCredential) => {
-          // Signed in
+          // Signed Up
           const currentUser = userCredential.user;
-          // Set user with displayName property if available
           setUser({
             displayName: currentUser.displayName || "", // Use an empty string if displayName is not available
           });
@@ -43,7 +34,11 @@ const LoginPortal = ({ user, setUser }) => {
       setEmail("");
       setPass("");
     } catch (error) {
-      console.error("Error", error.message);
+      setErrorMsg(error.message);
+      setTimeout(() => {
+        setErrorMsg("");
+      }, 1000);
+      return;
     }
   };
 
