@@ -4,6 +4,8 @@ import "firebase/compat/auth"; // Importing authentication module
 import { auth } from "../firebaseConfig";
 import {
   getAuth,
+  setPersistence,
+  browserLocalPersistence,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from "firebase/auth";
@@ -61,13 +63,17 @@ const LoginPortal = ({ user, setUser }) => {
   };
 
   const handleLogin = async (e) => {
+    const rememberMeCheckbox = document.getElementById("rememberMeCheckbox");
     e.preventDefault();
     try {
       signInWithEmailAndPassword(auth, email, password).then(
-        (userCredential) => {
+        async (userCredential) => {
           // Signed in
           const currentUser = userCredential.user;
           // Set user with displayName property if available
+          if (rememberMeCheckbox.checked) {
+            await setPersistence(auth, browserLocalPersistence);
+          }
           setUser({
             displayName: currentUser.displayName || "", // Use an empty string if displayName is not available
           });
@@ -83,6 +89,7 @@ const LoginPortal = ({ user, setUser }) => {
       }, 1000);
     }
   };
+
   return (
     <div className="h-screen w-screen grid grid-cols-2">
       <div className="bg-[#0F2B08]">
@@ -102,7 +109,7 @@ const LoginPortal = ({ user, setUser }) => {
         <div className="h-[70%] w-[80vh] flex flex-col bg-[#F5F6FA] border-2 border-[#F5F6FA] border-l-0 p-8 items-center justify-center">
           {!signUp ? (
             <>
-              <div className="input-container">
+              <div className="input-container relative">
                 <input
                   className="border border-t-0 border-l-0 border-r-0 text-black border-b-[#0F2B08] bg-[transparent] mb-4 p-2 focus:outline-none"
                   value={email}
@@ -110,7 +117,7 @@ const LoginPortal = ({ user, setUser }) => {
                 />
                 <label>Email/User</label>
               </div>
-              <div className="input-container">
+              <div className="input-container relative">
                 <input
                   type="password"
                   value={password}
@@ -120,13 +127,23 @@ const LoginPortal = ({ user, setUser }) => {
                 />
                 <label>Password</label>
               </div>
-              <button
-                title="submit"
-                onClick={handleLogin}
-                className="bg-[#0F2B08] text-white py-2 px-4 rounded"
-              >
-                Submit
-              </button>
+              <div className="grid grid-cols-2">
+                <div className="w-[30%] mb-[1vh] scale-100 flex items-center justify-center">
+                  <div class="item h-full flex items-center justify-center">
+                    <div class="toggle-pill-color">
+                      <input type="checkbox" id="pill3" name="check" />
+                      <label for="pill3"></label>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  title="submit"
+                  onClick={handleLogin}
+                  className="bg-[#0F2B08] text-white py-2 px-4 rounded"
+                >
+                  Submit
+                </button>
+              </div>
               <div
                 className="text-blue-500 cursor-pointer mt-2"
                 onClick={() => setSignUp(true)}
