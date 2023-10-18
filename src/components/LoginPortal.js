@@ -3,7 +3,6 @@ import firebase from "firebase/compat/app"; // Importing from compat/app
 import "firebase/compat/auth"; // Importing authentication module
 import { auth } from "../firebaseConfig";
 import {
-  getAuth,
   setPersistence,
   browserLocalPersistence,
   createUserWithEmailAndPassword,
@@ -13,6 +12,7 @@ import {
 const LoginPortal = ({ user, setUser }) => {
   const [email, setEmail] = useState("");
   const [password, setPass] = useState("");
+
   const [error, setErrorMsg] = useState("");
   const [signUp, setSignUp] = useState(false);
 
@@ -23,20 +23,24 @@ const LoginPortal = ({ user, setUser }) => {
       } else if (!isValidEmail(email)) {
         throw Error("Email must be a valid email address");
       }
+
       createUserWithEmailAndPassword(auth, email, password).then(
         (userCredential) => {
           // Signed Up
           const currentUser = userCredential.user;
+
           setUser({
-            displayName: currentUser.displayName || "", // Use an empty string if displayName is not available
+            displayName: currentUser.displayName || "",
           });
         }
       );
+
       setSignUp(false);
       setEmail("");
       setPass("");
     } catch (error) {
       setErrorMsg(error.message);
+
       setTimeout(() => {
         setErrorMsg("");
       }, 1000);
@@ -62,32 +66,65 @@ const LoginPortal = ({ user, setUser }) => {
     }
   };
 
+  const mapAuthCodeToMessage = (authCode) => {
+    switch (authCode) {
+      case "auth/invalid-password":
+        return "Password provided is not corrected";
+
+      case "auth/invalid-email":
+        return "Email provided is invalid";
+
+      default:
+        return "Invalid Credentials";
+    }
+  };
+
   const handleLogin = async (e) => {
     const rememberMeCheckbox = document.getElementById("rememberMeCheckbox");
+
     e.preventDefault();
+
     try {
-      signInWithEmailAndPassword(auth, email, password).then(
-        async (userCredential) => {
+      if (!isValidEmail(email)) {
+        throw Error("Email must be a valid email address");
+      }
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then(async (userCredential) => {
           // Signed in
           const currentUser = userCredential.user;
+
+          // if (rememberMeCheckbox.checked) {
+          //   await setPersistence(auth, browserLocalPersistence);
+          // }
+
           // Set user with displayName property if available
-          if (rememberMeCheckbox.checked) {
-            await setPersistence(auth, browserLocalPersistence);
-          }
           setUser({
             displayName: currentUser.displayName || "", // Use an empty string if displayName is not available
           });
-        }
-      );
+        })
+        .catch((error) => {
+          setErrorMsg(mapAuthCodeToMessage(error.code));
+
+          setTimeout(() => {
+            setErrorMsg("");
+          }, 1000);
+        });
+
       console.log(user);
       console.log("Success!");
     } catch (error) {
-      const errorMessage = "Invalid credentials were used";
-      setErrorMsg(errorMessage);
+      setErrorMsg(error.message);
+
       setTimeout(() => {
         setErrorMsg("");
       }, 1000);
     }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    handleLogin();
   };
 
   return (
@@ -127,15 +164,17 @@ const LoginPortal = ({ user, setUser }) => {
                 />
                 <label>Password</label>
               </div>
-              <div className="grid grid-cols-2">
-                <div className="w-[30%] mb-[1vh] scale-100 flex items-center justify-center">
-                  <div class="item h-full flex items-center justify-center">
+              <div className="grid grid-cols-1">
+                {" "}
+                {/* FIXME: change to include pill for checkbox (grid-cols-2 and uncomment the below) */}
+                {/* <div className="w-[30%] mb-[1vh] scale-100 flex items-center justify-center">
+                  <div className="item h-full flex items-center justify-center">
                     <div class="toggle-pill-color">
                       <input type="checkbox" id="pill3" name="check" />
-                      <label for="pill3"></label>
+                      <label htmlFor="pill3"></label>
                     </div>
                   </div>
-                </div>
+                </div> */}
                 <button
                   title="submit"
                   onClick={handleLogin}
@@ -150,7 +189,7 @@ const LoginPortal = ({ user, setUser }) => {
               >
                 Sign Up
               </div>
-              <p className="text-red-500 mt-2">{error}</p>
+              <p className="text-red-500 mt-2 h-[1vh]">{error}</p>
             </>
           ) : (
             <>
@@ -179,7 +218,7 @@ const LoginPortal = ({ user, setUser }) => {
               >
                 Confirm
               </button>
-              <p className="text-red-500 mt-2">{error}</p>
+              <p className="text-red-500 mt-2 h-[1vh]">{error}</p>
             </>
           )}
         </div>

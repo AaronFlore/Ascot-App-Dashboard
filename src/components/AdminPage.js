@@ -27,12 +27,15 @@ const AdminPage = () => {
           </div>
         </div>
         <div className="top-0 text-center w-full flex justify-center items-end mb-10">
-          <Dropdown
+          {/* <Dropdown
             controlClassName="bg-black h-[3.9vw] w-[19vw] flex justify-center items-center rounded-[20px] text-[#FCFF64] font-bold text-[1.7vw] font-inter"
             options={options}
             value={options[0]}
             placeholder={"Select an option"}
-          />
+          /> */}
+          <button className="bg-black h-[3.9vw] w-[19vw] flex justify-center items-center rounded-[20px] text-[#FCFF64] font-bold text-[1.7vw] font-inter">
+            Download CSV
+          </button>
           {/* <select>
             {options.map((value, index) => (
               <option className="text-[#FAFF11] font-bold" key={index}>
