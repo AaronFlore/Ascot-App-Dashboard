@@ -12,11 +12,10 @@ import {
 const LoginPortal = ({ user, setUser }) => {
   const [email, setEmail] = useState("");
   const [password, setPass] = useState("");
-
   const [error, setErrorMsg] = useState("");
   const [signUp, setSignUp] = useState(false);
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     try {
       if (!isValidPassword(password)) {
         throw Error("Password must be valid (8-12 char. with 1 number)");
@@ -24,27 +23,20 @@ const LoginPortal = ({ user, setUser }) => {
         throw Error("Email must be a valid email address");
       }
 
-      createUserWithEmailAndPassword(auth, email, password).then(
-        (userCredential) => {
-          // Signed Up
-          const currentUser = userCredential.user;
-
-          setUser({
-            displayName: currentUser.displayName || "",
-          });
-        }
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
       );
+      const currentUser = userCredential.user;
+      setUser({ displayName: currentUser.displayName || "" });
 
       setSignUp(false);
       setEmail("");
       setPass("");
     } catch (error) {
       setErrorMsg(error.message);
-
-      setTimeout(() => {
-        setErrorMsg("");
-      }, 1000);
-      return;
+      setTimeout(() => setErrorMsg(""), 1000);
     }
   };
 
@@ -79,49 +71,26 @@ const LoginPortal = ({ user, setUser }) => {
     }
   };
 
-  const handleLogin = async (e) => {
-    const rememberMeCheckbox = document.getElementById("rememberMeCheckbox");
-
-    e.preventDefault();
-
+  const handleLogin = async () => {
     try {
       if (!isValidEmail(email)) {
         throw Error("Email must be a valid email address");
       }
 
-      signInWithEmailAndPassword(auth, email, password)
-        .then(async (userCredential) => {
-          // Signed in
-          const currentUser = userCredential.user;
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const currentUser = userCredential.user;
+      setUser({ displayName: currentUser.displayName || "" });
 
-          // if (rememberMeCheckbox.checked) {
-          //   await setPersistence(auth, browserLocalPersistence);
-          // }
-
-          // Set user with displayName property if available
-          setUser({
-            displayName: currentUser.displayName || "", // Use an empty string if displayName is not available
-          });
-        })
-        .catch((error) => {
-          setErrorMsg(mapAuthCodeToMessage(error.code));
-
-          setTimeout(() => {
-            setErrorMsg("");
-          }, 1000);
-        });
-
-      console.log(user);
-      console.log("Success!");
+      // If persistence is required, you can add it here
     } catch (error) {
-      setErrorMsg(error.message);
-
-      setTimeout(() => {
-        setErrorMsg("");
-      }, 1000);
+      setErrorMsg(mapAuthCodeToMessage(error.code));
+      setTimeout(() => setErrorMsg(""), 1000);
     }
   };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     handleLogin();
@@ -218,6 +187,12 @@ const LoginPortal = ({ user, setUser }) => {
               >
                 Confirm
               </button>
+              <p
+                className="text-blue-500 cursor-pointer mt-2"
+                onClick={() => setSignUp(false)}
+              >
+                ← Back
+              </p>
               <p className="text-red-500 mt-2 h-[1vh]">{error}</p>
             </>
           )}

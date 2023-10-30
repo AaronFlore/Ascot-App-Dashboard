@@ -5,6 +5,7 @@ import { auth } from "../firebaseConfig";
 const AdminPage = () => {
   const options = ["Plant Tracking App"];
   const user = auth;
+  const name = user.currentUser.displayName ? user : "Dr. Willette";
 
   return (
     <div className="bg-[#0E0E0E] h-screen w-screen relative grid grid-cols-8 gap-7">
@@ -22,9 +23,7 @@ const AdminPage = () => {
             alt="User Profile Picture"
             className="user__logo__img hidden border-black border-2"
           />
-          <div className="font-bold">
-            Welcome {user.currentUser.displayName}!
-          </div>
+          <div className="font-bold">Welcome {name}!</div>
         </div>
         <div className="top-0 text-center w-full flex justify-center items-end mb-10">
           {/* <Dropdown
