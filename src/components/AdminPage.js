@@ -1,6 +1,7 @@
 import React from "react";
 import Dropdown from "react-dropdown";
 import { auth } from "../firebaseConfig";
+import "../csvOutput.js";
 
 const AdminPage = () => {
   const options = ["Plant Tracking App"];
@@ -32,7 +33,8 @@ const AdminPage = () => {
             value={options[0]}
             placeholder={"Select an option"}
           /> */}
-          <button className="bg-black h-[3.9vw] w-[19vw] flex justify-center items-center rounded-[20px] text-[#FCFF64] font-bold text-[1.7vw] font-inter">
+          <button className="bg-black h-[3.9vw] w-[19vw] flex justify-center items-center rounded-[20px] text-[#FCFF64] font-bold text-[1.7vw] font-inter"
+                            onclick="download_export()">
             Download CSV
           </button>
           {/* <select>
