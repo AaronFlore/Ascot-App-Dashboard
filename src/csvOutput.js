@@ -1,79 +1,119 @@
-import * as firebase from "./firebaseConfig.js";
 import { db } from "./firebaseConfig.js";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, Timestamp } from "firebase/firestore";
 
-function exportToCsv(filename, rows) {
-  var processRow = function (row) {
-    var finalVal = "";
-    for (var j = 0; j < row.length; j++) {
-      var innerValue = row[j] === null ? "" : row[j].toString();
-      if (row[j] instanceof Date) {
-        innerValue = row[j].toLocaleString();
-      }
-      var result = innerValue.replace(/"/g, '""');
-      if (result.search(/("|,|\n)/g) >= 0) result = '"' + result + '"';
-      if (j > 0) finalVal += ",";
-      finalVal += result;
+const exportToCsv = (filename, rows) => {
+  const processRow = (row) =>
+    row
+      .map((val) => {
+        const result = (val === null ? "" : String(val)).replace(/"/g, '""');
+        return result.search(/("|,|\n)/g) >= 0 ? `"${result}"` : result;
+      })
+      .join(",") + "\n";
+
+  const csvFile = rows.map(processRow).join("");
+  const blob = new Blob([csvFile], { type: "text/csv;charset=utf-8;" });
+
+  const link = document.createElement("a");
+  if (link.download !== undefined) {
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = filename;
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+};
+
+const isTimestamp = (value) => value instanceof Timestamp;
+
+// The following is a ISO String so more reliable and consistent (use for data analysis if possible)
+// const convertTimestamp = (value) =>
+//   isTimestamp(value) ? value.toDate().toISOString() : value;
+
+// converts Firebase Timestamp to human readable version
+const convertTimestamp = (value) =>
+  isTimestamp(value) ? value.toDate().toLocaleString() : value;
+
+// goes through each row and separates into each value for consistent rows
+const mapDocToRow = (headers, identifier, doc) =>
+  headers.map((header) => {
+    if (header === "ID") return identifier;
+
+    const [field, value] = header.split("_");
+    const docValue = doc[field];
+
+    if (field === "dead" || field.startsWith("evidenceOf")) {
+      return docValue
+        ? Array.isArray(docValue)
+          ? docValue.includes(value)
+            ? "TRUE"
+            : "FALSE"
+          : "TRUE"
+        : "FALSE";
     }
-    return finalVal + "\n";
-  };
 
-  var csvFile = "";
-  for (var i = 0; i < rows.length; i++) {
-    csvFile += processRow(rows[i]);
-  }
-
-  var blob = new Blob([csvFile], { type: "text/csv;charset=utf-8;" });
-  if (navigator.msSaveBlob) {
-    // IE 10+
-    navigator.msSaveBlob(blob, filename);
-  } else {
-    var link = document.createElement("a");
-    if (link.download !== undefined) {
-      // feature detection
-      // Browsers that support HTML5 download attribute
-      var url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute("download", filename);
-      link.style.visibility = "hidden";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    if (docValue !== undefined) {
+      const formattedValue = Array.isArray(docValue)
+        ? docValue.includes(value)
+          ? "TRUE"
+          : ""
+        : convertTimestamp(docValue) || "";
+      return formattedValue;
     }
-  }
-}
+    return "";
+  });
 
-const all_rows = [];
+const addCSVRow = (identifier, doc, headers) =>
+  // add the row to the csv
+  allRows.push(mapDocToRow(headers, identifier, doc));
 
-function add_to_csv_list(doc) {
-  const current_row = Object.values(doc);
-  all_rows.push(current_row);
-}
+const fetchFirebaseData = async () => {
+  // get the collection, can switch plantsData with a specialized {documentName}
+  // for modularity in future
+  const collRef = collection(db, "plantsData");
+  const snapshot = await getDocs(collRef);
 
-async function fetchFirebaseData() {
-  try {
-    const collRef = collection(db, "plantsData");
-    const snapshot = await getDocs(collRef);
-    snapshot.docs.forEach((doc) => {
-      add_to_csv_list(doc.data());
-    });
-    return all_rows;
-  } catch (error) {
-    console.error("Error fetching data: ", error);
-    return [];
-  }
-}
+  // no snapshot, we done
+  if (snapshot.empty) return;
 
-function download_export() {
-  var today = new Date();
-  var date = today.toISOString().split("T")[0];
-  var time = today.toTimeString().split(" ")[0];
-  var dateTime = date + "_" + time;
-  exportToCsv(dateTime + ".csv", all_rows);
-}
+  // get the evidenceOf values
+  const arrayFields = ["evidenceOf"];
+  // setup the headers with our custom ID value
+  const headers = [
+    "ID",
+    ...Object.keys(snapshot.docs[0].data()),
+    ...new Set(
+      arrayFields.flatMap((field) =>
+        snapshot.docs
+          .flatMap((doc) => doc.data()[field] || [])
+          .map((value) => `${field}_${value}`)
+      )
+    ),
+  ];
+  allRows.push(headers);
 
-// Usage
-export async function fetchDataAndDownload() {
+  snapshot.docs.forEach((doc, index) =>
+    addCSVRow(index + 1, doc.data(), headers)
+  );
+};
+
+const downloadCsv = () => {
+  // sets up time stamp for document name
+  const today = new Date();
+  const date = today.toISOString().split("T")[0];
+  const time = today.toTimeString().split(" ")[0].replace(/:/g, "-");
+  const dateTime = `${date}_${time}`;
+  exportToCsv(`${dateTime}.csv`, allRows);
+};
+
+const allRows = [];
+
+export const fetchDataAndDownload = async () => {
+  // Clear the allRows array
+  allRows.length = 0;
+  // setup allRows
   await fetchFirebaseData();
-  download_export();
-}
+  // download the csv with the rows
+  downloadCsv();
+};
