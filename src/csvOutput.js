@@ -27,70 +27,63 @@ const exportToCsv = (filename, rows) => {
 
 const isTimestamp = (value) => value instanceof Timestamp;
 
-// The following is a ISO String so more reliable and consistent (use for data analysis if possible)
-// const convertTimestamp = (value) =>
-//   isTimestamp(value) ? value.toDate().toISOString() : value;
-
-// converts Firebase Timestamp to human readable version
 const convertTimestamp = (value) =>
-  isTimestamp(value) ? value.toDate().toLocaleString() : value;
+  isTimestamp(value)
+    ? value.toDate().toISOString().split("T").join(" ").split(".")[0]
+    : value;
 
-// goes through each row and separates into each value for consistent rows
 const mapDocToRow = (headers, identifier, doc) =>
   headers.map((header) => {
     if (header === "ID") return identifier;
 
-    const [field, value] = header.split("_");
+    const headerParts = header.split("_");
+    const field = headerParts[0];
+    const subfield = headerParts[1];
     const docValue = doc[field];
 
-    if (field === "dead" || field.startsWith("evidenceOf")) {
-      return docValue
-        ? Array.isArray(docValue)
-          ? docValue.includes(value)
-            ? "TRUE"
-            : "FALSE"
-          : "TRUE"
-        : "FALSE";
-    }
-
-    if (docValue !== undefined) {
-      const formattedValue = Array.isArray(docValue)
-        ? docValue.includes(value)
-          ? "TRUE"
-          : ""
-        : convertTimestamp(docValue) || "";
-      return formattedValue;
+    if (field === "evidenceOf") {
+      // Check if the evidenceOf array contains the subfield
+      return docValue && docValue.includes(subfield) ? 1 : 0;
+    } else if (field === "dead") {
+      return docValue ? 1 : 0;
+    } else if (docValue !== undefined) {
+      return convertTimestamp(docValue) || "";
     }
     return "";
   });
 
 const addCSVRow = (identifier, doc, headers) =>
-  // add the row to the csv
   allRows.push(mapDocToRow(headers, identifier, doc));
 
 const fetchFirebaseData = async () => {
-  // get the collection, can switch plantsData with a specialized {documentName}
-  // for modularity in future
   const collRef = collection(db, "plantsData");
   const snapshot = await getDocs(collRef);
 
-  // no snapshot, we done
   if (snapshot.empty) return;
 
-  // get the evidenceOf values
   const arrayFields = ["evidenceOf"];
-  // setup the headers with our custom ID value
-  const headers = [
-    "ID",
-    ...Object.keys(snapshot.docs[0].data()),
-    ...new Set(
-      arrayFields.flatMap((field) =>
-        snapshot.docs
-          .flatMap((doc) => doc.data()[field] || [])
-          .map((value) => `${field}_${value}`)
-      )
-    ),
-  ];
+  const headers = ["ID"];
+
+  // Get the first document to determine the structure of the fields
+  const firstDocData = snapshot.docs[0].data();
+
+  // Add normal fields to headers
+  Object.keys(firstDocData)
+    .filter((key) => !arrayFields.includes(key)) // Exclude array fields
+    .forEach((key) => headers.push(key));
+
+  // Add array fields to headers
+  arrayFields.forEach((field) => {
+    snapshot.docs
+      .flatMap((doc) => doc.data()[field] || [])
+      .forEach((value) => {
+        const header = `${field}_${value}`;
+        if (!headers.includes(header)) {
+          headers.push(header);
+        }
+      });
+  });
+
   allRows.push(headers);
 
   snapshot.docs.forEach((doc, index) =>
@@ -99,7 +92,6 @@ const fetchFirebaseData = async () => {
 };
 
 const downloadCsv = () => {
-  // sets up time stamp for document name
   const today = new Date();
   const date = today.toISOString().split("T")[0];
   const time = today.toTimeString().split(" ")[0].replace(/:/g, "-");
@@ -110,10 +102,7 @@ const downloadCsv = () => {
 const allRows = [];
 
 export const fetchDataAndDownload = async () => {
-  // Clear the allRows array
   allRows.length = 0;
-  // setup allRows
   await fetchFirebaseData();
-  // download the csv with the rows
   downloadCsv();
 };
