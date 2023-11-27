@@ -3,6 +3,7 @@ import Dropdown from "react-dropdown";
 import { auth } from "../firebaseConfig";
 import { fetchDataAndDownload } from "../csvOutput.js";
 import Image from "../images/user_icon.png";
+import InvalidCredentials from "./InvalidCredentials.js";
 
 const AdminPage = ({ user, setUser }) => {
   const handleSignOut = async () => {
@@ -14,12 +15,14 @@ const AdminPage = ({ user, setUser }) => {
     }
   };
 
+  const adminStatus = user && user.admin;
+
   const name =
     user && user.firstName
       ? `${user.firstName} ${user.lastName}`
       : "Unknown User!";
 
-  return (
+  return adminStatus ? (
     <div className="bg-[#0E0E0E] h-screen w-screen relative grid grid-cols-8 gap-7">
       <div className="sign__out absolute">
         <button
@@ -68,6 +71,8 @@ const AdminPage = ({ user, setUser }) => {
         </div>
       </div>
     </div>
+  ) : (
+    <InvalidCredentials />
   );
 };
 

@@ -31,7 +31,6 @@ const SignIn = ({
         <label>Password</label>
       </div>
       <div className="grid grid-cols-1">
-        {" "}
         {/* FIXME: change to include pill for checkbox (grid-cols-2 and uncomment the below) */}
         {/* <div className="w-[30%] mb-[1vh] scale-100 flex items-center justify-center">
                   <div className="item h-full flex items-center justify-center">

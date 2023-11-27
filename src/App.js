@@ -21,6 +21,7 @@ function App() {
             )
           }
         />
+        {/* <Route path="/forgot" element={<ForgotPassword />} /> */}
         <Route path="/forgot" element={<ForgotPassword />} />
       </Routes>
     </Router>
