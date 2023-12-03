@@ -1,5 +1,5 @@
 ---
-name: Custom issue template
+name: Issue Templated
 about: Describe this issue template's purpose here [Bug Fix | Feature Extension |
   Feature Creation]
 title: "[BUG]"
