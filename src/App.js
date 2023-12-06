@@ -1,6 +1,6 @@
 import "./App.css";
 import AdminPage from "./components/AdminPage";
-import LoginPortal from "./components/LoginPortal";
+import LoginPortal2 from "./components/LoginPortal";
 import ForgotPassword from "./components/ForgotPassword"; // This will be your new component for password reset
 import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -15,7 +15,7 @@ function App() {
           path="/"
           element={
             !user ? (
-              <LoginPortal user={user} setUser={setUser} />
+              <LoginPortal2 user={user} setUser={setUser} />
             ) : (
               <AdminPage user={user} setUser={setUser} />
             )

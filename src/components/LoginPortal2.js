@@ -9,8 +9,8 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from "firebase/auth";
-import SignIn from "./SignIn";
-import SignUp from "./SignUp";
+import SignIn from "./SignIn copy";
+import SignUp from "./SignUp copy";
 
 const LoginPortal = ({ user, setUser }) => {
   const [email, setEmail] = useState("");
@@ -108,22 +108,16 @@ const LoginPortal = ({ user, setUser }) => {
 
   return (
     <div className="h-screen w-screen grid grid-cols-2">
-      <div className="bg-[#0F2B08]">
-        <div className="h-full flex items-center justify-end">
-          <div className="flex h-[70%] w-[80vh] border-[#5C4646] border-2 border-r-0">
-            <div className="flex flex-col justify-center items-center w-full h-full">
-              <div className="text-[#D8FF84] text-center opacity-100 font-bold text-[3.5vw] font-montserrat">
-                Admin Portal
-                <br />
-                Ascot App
-              </div>
-            </div>
+      <div className="bg-[#0a2311] rounded-r-[5%]">
+        <div className="grid grid-cols-10">
+          <div className="col-span-1 text-white font-bold m-4 text[1vh]">
+            ASCOT
           </div>
         </div>
       </div>
-      <div className="h-full flex items-center justify-start bg-[#D9D9D9]">
-        <div className="h-[70%] w-[80vh] flex flex-col bg-[#F5F6FA] border-2 border-[#000000] border-l-0 p-8 items-center justify-center">
-          <header className="flex justify-left flex-col items-left mb-10 px-[20vh]">
+      <div className="sign__in__up bg-[#f1f1f1] flex flex-col justify-center items-left p-[10vh]">
+        <div className="border-2 border-red-500 p-40">
+          <header className="flex justify-left flex-col items-left mb-10">
             {!signUp ? (
               <>
                 <p className="text-[3vh]">Hello! Welcome Back.</p>
@@ -165,6 +159,32 @@ const LoginPortal = ({ user, setUser }) => {
           </div>
         </div>
       </div>
+      {/* <div className="bg-[black]">
+          {!signUp ? (
+            <SignIn
+              email={email}
+              setEmail={setEmail}
+              password={password}
+              setPass={setPass}
+              handleLogin={handleLogin}
+              setSignUp={setSignUp}
+              error={error}
+            />
+          ) : (
+            <SignUp
+              firstName={firstName}
+              setFirstName={setFirstName}
+              lastName={lastName}
+              setLastName={setLastName}
+              email={email}
+              setEmail={setEmail}
+              password={password}
+              setPass={setPass}
+              handleSignUp={handleSignUp}
+              setSignUp={setSignUp}
+              error={error}
+            />
+          )} */}
     </div>
   );
 };
