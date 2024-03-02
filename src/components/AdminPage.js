@@ -25,12 +25,12 @@ const AdminPage = ({ user, setUser }) => {
   return adminStatus ? (
     <div className="bg-[#0E0E0E] h-screen w-screen relative grid grid-cols-8 gap-7">
       <div className="sign__out absolute">
-        <button
+        {/* <button
           className="border-2 bg-black border-white rounded-full p-2 my-2 mx-2"
           onClick={handleSignOut}
         >
           <p className="text-white font-bold">Sign Out</p>
-        </button>
+        </button> */}
       </div>
       <div className="grid grid-rows-6 col-span-6 mt-10 ml-10 gap-8">
         <div className="w-full bg-[#D9D9D9] row-span-3 h-full rounded-[25px]"></div>
