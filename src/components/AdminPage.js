@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Dropdown from "react-dropdown";
 import { auth, db } from "../firebaseConfig";
 import { fetchDataAndDownload } from "../csvOutput.js";
 import Image from "../images/user_icon.png";
 import InvalidCredentials from "./InvalidCredentials.js";
+// import { projectsList } from "../projectsOutput.js";
+// import fetchProjectData from "../projectsOutput.js";
 
 const AdminPage = ({ user, setUser }) => {
   const handleSignOut = async () => {
@@ -14,6 +16,23 @@ const AdminPage = ({ user, setUser }) => {
       console.error(error.message);
     }
   };
+
+  //   const loadProjects = async (userProjects) => {
+  //     try {
+  //       await fetchProjectData(userProjects);
+  //     } catch (err) {
+  //       console.log(err.message);
+  //     }
+  //   };
+  const [projectList, setProjectList] = useState([]);
+
+  useEffect(() => {
+    if (!user || !user.projects) {
+      console.log("User projects cannot be found!");
+    } else {
+      setProjectList(user.projects);
+    }
+  }, [user]);
 
   const adminStatus = user && user.admin;
 
@@ -36,11 +55,18 @@ const AdminPage = ({ user, setUser }) => {
         <div className="w-full bg-[#D9D9D9] row-span-3 h-full rounded-[25px]"></div>
         <div className="w-full h-full row-span-2 rounded-[25px] grid grid-cols-6 gap-10">
           <div className="col-span-2 bg-[#D798E1] rounded-[25px]">
-            <div className="top-0 text-center w-full flex justify-center items-end mb-10 font-bold">Projects</div>
+            <div className="top-0 text-center w-full flex justify-center items-end mb-10 font-bold">
+              Projects
+            </div>
+            {projectList?.map((project) => (
+              <p>{project}</p> // Assuming each project has a 'name' property
+            ))}
             {/* Will call a function to projectsOutput here to vertically list the projects under an admin account.  Use onLoad? */}
           </div>
           <div className="col-span-4 bg-[#4B4534] rounded-[25px]">
-            <div className="top-0 text-center w-full flex justify-center items-end mb-10 font-bold">Users</div>
+            <div className="top-0 text-center w-full flex justify-center items-end mb-10 font-bold">
+              Users
+            </div>
           </div>
         </div>
       </div>
