@@ -4,6 +4,7 @@ import { auth, db } from "../firebaseConfig";
 import { fetchDataAndDownload } from "../csvOutput.js";
 import Image from "../images/user_icon.png";
 import InvalidCredentials from "./InvalidCredentials.js";
+import DataPreview from './DataPreview'; 
 // import { projectsList } from "../projectsOutput.js";
 // import fetchProjectData from "../projectsOutput.js";
 
@@ -34,7 +35,8 @@ const AdminPage = ({ user, setUser }) => {
     }
   }, [user]);
 
-  const adminStatus = user && user.admin;
+  // const adminStatus = user && user.admin;
+    const adminStatus = user;
 
   const name =
     user && user.firstName
@@ -52,7 +54,10 @@ const AdminPage = ({ user, setUser }) => {
         </button> */}
       </div>
       <div className="grid grid-rows-6 col-span-6 mt-10 ml-10 gap-8">
-        <div className="w-full bg-[#D9D9D9] row-span-3 h-full rounded-[25px]"></div>
+        <div className="w-full bg-[#D9D9D9] row-span-3 h-full rounded-[25px]">
+          <p className="text-center w-full flex justify-center items-end font-bold">Data Preview</p>
+          <DataPreview />
+        </div>
         <div className="w-full h-full row-span-2 rounded-[25px] grid grid-cols-6 gap-10">
           <div className="col-span-2 bg-[#D798E1] rounded-[25px]">
             <div className="top-0 text-center w-full flex justify-center items-end mb-10 font-bold">
